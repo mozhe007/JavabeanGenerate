@@ -16,13 +16,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- *
  * @author James
  */
 public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
 
     public static final int DEFAULT_WIDTH = 680;
     public static final int DEFAULT_HEIGHT = 540;
+
     /**
      * Creates new form NewJFrame
      */
@@ -48,7 +48,7 @@ public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
         dbLabel = new javax.swing.JLabel();
         dbLabel.setText("数据库：");
         dbComboBox = new javax.swing.JComboBox<>();
-        dbComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Oracle", "MySql" }));
+        dbComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Oracle", "MySql"}));
         dbComboBox.setToolTipText("");
         dbComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -117,6 +117,7 @@ public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
         tableNamesScrollPane = new javax.swing.JScrollPane();
         model = new MyTableModel();
         tableNamesTable = new javax.swing.JTable(model);
+        tableNamesTable.getTableHeader().setDefaultRenderer(new CheckHeaderCellRenderer(tableNamesTable));
         tableNamesScrollPane.setViewportView(tableNamesTable);
 
         //查询
@@ -138,7 +139,7 @@ public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
                 int rowCount = model.getRowCount();
                 for (int i = 0; i < rowCount; i++) {
                     for (int j = 0; j < 2; j++) {
-                        System.out.print(model.getValueAt(i,j));
+                        System.out.print(model.getValueAt(i, j));
                     }
                 }
             }
@@ -247,7 +248,8 @@ public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
     }
 
     private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        //DOING
+
     }
 
     /**
@@ -311,56 +313,62 @@ public class JavabeanGenerateFrame2 extends javax.swing.JFrame {
 }
 
 //自定义表格模型
-class MyTableModel extends AbstractTableModel{
+class MyTableModel extends AbstractTableModel {
     //单元格元素类型
-    private Class cellType[]={Boolean.class,String.class};
+    private Class cellType[] = {Boolean.class, String.class};
     //表头
-    private String title[]={"是否选中","表名"};
+    private String title[] = {"是否选中", "表名"};
     //模拟数据
-    private Object data[][]={{new Boolean(true),"123"},
-            {new Boolean(false),"234"},
-            {new Boolean(false),"345"}
+    private Object data[][] = {{new Boolean(true), "123"},
+            {new Boolean(false), "234"},
+            {new Boolean(false), "345"}
     };
-    public MyTableModel(){
+
+    public MyTableModel() {
     }
+
     @Override
     public Class<?> getColumnClass(int arg0) {
         // TODO Auto-generated method stub
         return cellType[arg0];
     }
+
     @Override
     public String getColumnName(int arg0) {
         // TODO Auto-generated method stub
         return title[arg0];
     }
+
     @Override
     public int getColumnCount() {
         // TODO Auto-generated method stub
         return title.length;
     }
+
     @Override
     public int getRowCount() {
         // TODO Auto-generated method stub
         return data.length;
     }
+
     @Override
     public Object getValueAt(int r, int c) {
         // TODO Auto-generated method stub
         return data[r][c];
     }
+
     //重写isCellEditable方法
-    public boolean isCellEditable(int r,int c)
-    {
-        if(c==0){
+    public boolean isCellEditable(int r, int c) {
+        if (c == 0) {
             return true;
         }
         return false;
     }
+
     //重写setValueAt方法
-    public void setValueAt(Object value,int r,int c)
-    {
-        data[r][c]=value;
-        this.fireTableCellUpdated(r,c);
+    public void setValueAt(Object value, int r, int c) {
+        data[r][c] = value;
+        this.fireTableCellUpdated(r, c);
     }
 }
 
@@ -368,11 +376,12 @@ class CheckHeaderCellRenderer implements TableCellRenderer {
     MyTableModel tableModel;
     JTableHeader tableHeader;
     final JCheckBox selectBox;
+    final int CHECKBOX_COLUMN = 0;
 
     public CheckHeaderCellRenderer(final JTable table) {
         this.tableModel = (MyTableModel) table.getModel();
         this.tableHeader = table.getTableHeader();
-        selectBox = new JCheckBox(tableModel.getColumnName(table.getColumnCount() - 1));
+        selectBox = new JCheckBox("(全选)"+tableModel.getColumnName(table.getColumnCount() - 1));
         selectBox.setSelected(false);
         tableHeader.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -382,7 +391,9 @@ class CheckHeaderCellRenderer implements TableCellRenderer {
                     if (selectColumn == table.getColumnCount() - 1) {
                         boolean value = !selectBox.isSelected();
                         selectBox.setSelected(value);
-                       // tableModel.selectAllOrNull(value);
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            table.setValueAt(value, i, CHECKBOX_COLUMN);
+                        }
                         tableHeader.repaint();
                     }
                 }
@@ -405,7 +416,6 @@ class CheckHeaderCellRenderer implements TableCellRenderer {
         component.setBackground(tableHeader.getBackground());
         component.setFont(tableHeader.getFont());
         component.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-
         return component;
     }
 
