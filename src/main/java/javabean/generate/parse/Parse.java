@@ -2,7 +2,7 @@ package javabean.generate.parse;
 
 import javabean.generate.Constants;
 import javabean.generate.bean.Column;
-import javabean.generate.bean.Connection;
+import javabean.generate.bean.ConnectionBean;
 import javabean.generate.bean.Table;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,20 +12,30 @@ import java.util.List;
 
 public class Parse {
 
-    private Connection connection;
+    private ConnectionBean connection;
 
-    public Parse(Connection connection) {
+    public Parse(ConnectionBean connection) {
         this.connection = connection;
     }
 
-    public List<Table> getParseTables() {
+    /**
+     *
+     * @param db 数据库类型，只支持Oralce .MySql
+     * @return
+     */
+    public List<Table> getParseTables(String db) {
         List<Table> tables = new ArrayList<>();
-        java.sql.Connection conn = getConnection();
+        java.sql.Connection conn = null;
+        if("Oracle".equalsIgnoreCase(db)){
+            conn= getConnectionOracle();
+        } else if ("Mysql".equals(db)){
+            conn= getConnectionMysql();
+        }
         ResultSet rs = null;
         try {
             DatabaseMetaData dbmd = conn.getMetaData();
             //rs = dbmd.getTables(conn.getCatalog(), null, null, new String[]{"TABLE"});
-            rs = dbmd.getTables(conn.getCatalog(),connection.getSchema(),null,new String[]{"TABLE","VIEW"});
+            rs = dbmd.getTables(conn.getCatalog(),connection.getUser(),null,new String[]{"TABLE","VIEW"});
             ResultSet colRs;
             List<Column> columns;
             while (rs.next()) {
@@ -52,7 +62,7 @@ public class Parse {
         close(conn);
         return tables;
     }
-    private java.sql.Connection getConnection() {
+    private java.sql.Connection getConnectionOracle() {
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
         } catch (ClassNotFoundException e) {
@@ -68,13 +78,13 @@ public class Parse {
         }
         return conn;
     }
-    /*private Connection getMysqlConnection() {
+    private java.sql.Connection getConnectionMysql() {
         try {
             Class.forName("org.gjt.mm.mysql.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        Connection conn = null;
+        java.sql.Connection conn = null;
         String url = "jdbc:mysql://%s:%s/%s?characterEncoding=utf-8&useSSL=false";
         url = String.format(url, connection.getHost(), connection.getPort(), connection.getDb());
         try {
@@ -83,7 +93,7 @@ public class Parse {
             e.printStackTrace();
         }
         return conn;
-    }*/
+    }
 
     private void close(java.sql.Connection conn) {
         if (conn != null) {

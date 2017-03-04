@@ -1,25 +1,25 @@
 package javabean.generate.bean;
 
-public class Connection {
+/**
+ * Created by James on 2017/3/4.
+ */
+public class ConfBean {
+
+    private String db;
     private String host;
     private String port;
-    private String db;
-    private String schema;
+    private String dbName;
     private String user;
     private String passwd;
+    private String pkg;
+    private String dir;
 
-    public Connection() {
-        super();
+    public String getDb() {
+        return db;
     }
 
-    public Connection(String host, String port, String db, String schema, String user, String passwd) {
-        super();
-        this.host = host;
-        this.port = port;
+    public void setDb(String db) {
         this.db = db;
-        this.schema = schema;
-        this.user = user;
-        this.passwd = passwd;
     }
 
     public String getHost() {
@@ -38,20 +38,12 @@ public class Connection {
         this.port = port;
     }
 
-    public String getDb() {
-        return db;
+    public String getDbName() {
+        return dbName;
     }
 
-    public void setDb(String db) {
-        this.db = db;
-    }
-
-    public String getSchema() {
-        return schema;
-    }
-
-    public void setSchema(String schema) {
-        this.schema = schema;
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
     }
 
     public String getUser() {
@@ -68,5 +60,21 @@ public class Connection {
 
     public void setPasswd(String passwd) {
         this.passwd = passwd;
+    }
+
+    public String getPkg() {
+        return pkg;
+    }
+
+    public void setPkg(String pkg) {
+        this.pkg = pkg;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
+        this.dir = dir;
     }
 }

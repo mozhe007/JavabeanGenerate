@@ -6,7 +6,9 @@ package javabean.generate.ui;
  */
 
 import javabean.generate.CommandOptions;
-import javabean.generate.bean.Connection;
+import javabean.generate.Constants;
+import javabean.generate.bean.ConfBean;
+import javabean.generate.bean.ConnectionBean;
 import javabean.generate.bean.Table;
 import javabean.generate.parse.GenerateJavaBean;
 import javabean.generate.parse.Parse;
@@ -20,6 +22,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 /**
  * @author James
@@ -30,7 +34,6 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
     public static final int DEFAULT_HEIGHT = 540;
     final int CHECKBOX_COLUMN = 0;
     final int TABLENAME_COLUMN = 1;
-    java.util.List<Table> tables;//数据库查询的东西
 
     /**
      * Creates new form NewJFrame
@@ -58,69 +61,41 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
         dbLabel.setText("数据库：");
         dbComboBox = new javax.swing.JComboBox<>();
         dbComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"Oracle", "MySql"}));
-        dbComboBox.setToolTipText("");
-        dbComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dbComboBoxActionPerformed(evt);
-            }
-        });
 
         //IP
         ipLabel = new javax.swing.JLabel();
         ipLabel.setText("IP：");
         ipTextField = new javax.swing.JTextField();
-        ipTextField.setText("localhost");
 
         //端口
         portLabel = new javax.swing.JLabel();
         portLabel.setText("端口(port)：");
         portTextField = new javax.swing.JTextField();
-        portTextField.setText("3306");
 
         //数据库名
         dbNameLabel = new javax.swing.JLabel();
-        dbNameLabel.setText("数据库：");
+        dbNameLabel.setText("数据库名：");
         dbNameTextField = new javax.swing.JTextField();
-        dbNameTextField.setText("zrrkf01");
-        dbNameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dbNameTextFieldActionPerformed(evt);
-            }
-        });
 
         //用户名
         userLabel = new javax.swing.JLabel();
         userLabel.setText("用户名：");
         userTextField = new javax.swing.JTextField();
-        userTextField.setText("wssb_nw");
-        userTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                userTextFieldActionPerformed(evt);
-            }
-        });
 
         //密码
         pswLabel = new javax.swing.JLabel();
         pswLabel.setText("密码：");
         pswTextField = new javax.swing.JTextField();
-        pswTextField.setText("wssb_nw");
-        pswTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pswTextFieldActionPerformed(evt);
-            }
-        });
 
         //包名
         packageLabel = new javax.swing.JLabel();
         packageLabel.setText("包名：");
         packageTextField = new javax.swing.JTextField();
-        packageTextField.setText("包名");
 
         //导出路径
         pathLabel = new javax.swing.JLabel();
         pathLabel.setText("导出目录：");
         pathTextField = new javax.swing.JTextField();
-        pathTextField.setText("D：//");
 
         //数据库表名列表
         tableNamesScrollPane = new javax.swing.JScrollPane();
@@ -234,27 +209,11 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>
 
-    private void dbComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
-
-    private void userTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
-
-    private void pswTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
-
-    private void dbNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-    }
-
     private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        CommandOptions options = new CommandOptions();
-        tables = new Parse(
-                new Connection(options.host, options.port, options.db, options.schema, options.user, options.passwd))
-                .getParseTables();
+        ConfBean confBean = getInputConf();
+        java.util.List<Table> tables = new Parse(
+                new ConnectionBean(confBean.getHost(), confBean.getPort(), confBean.getDbName(),confBean.getUser(), confBean.getPasswd()))
+                .getParseTables(confBean.getDb());
         int size = tables.size();
         Object tableArray[][] = new Object[size][2];
         for (int i = 0; i < tables.size(); i++) {
@@ -267,23 +226,56 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
     }
 
     private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        CommandOptions options = new CommandOptions();
-
-        int rowCount = tableNamesTable.getModel().getRowCount();
-        for(int i=0;i<rowCount;i++){
-            if((Boolean)tableNamesTable.getModel().getValueAt(i,CHECKBOX_COLUMN)){
-                Table a = (Table)tableNamesTable.getModel().getValueAt(i,TABLENAME_COLUMN);
-            }
-        }
-
+        ConfBean confBean = getInputConf();
+        this.setConfToPreferences(confBean);
+        java.util.List<Table> selectedTables = ((MyTableModel)tableNamesTable.getModel()).getSelectedTables();
         try {
-            java.util.List<File> outFiles = new GenerateJavaBean(tables).generate(new File(options.dir), options.pkg);
+            java.util.List<File> outFiles = new GenerateJavaBean(selectedTables).generate(new File(confBean.getDir()), confBean.getPkg());
             for(File outFile : outFiles){
                 System.out.println(outFile);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    // 获取界面上的用户输入信息
+    public ConfBean getInputConf(){
+        ConfBean confBean = new ConfBean();
+        confBean.setDb((String)dbComboBox.getSelectedItem());
+        confBean.setHost(ipTextField.getText());
+        confBean.setPort(portTextField.getText());
+        confBean.setDbName(dbNameTextField.getText());
+        confBean.setUser(userTextField.getText());
+        confBean.setPasswd(pswTextField.getText());
+        confBean.setPkg(packageTextField.getText());
+        confBean.setDir(pathTextField.getText());
+        return confBean;
+    }
+    // 保存用户的输入到Preferences,以便下次获取
+    public void setConfToPreferences(ConfBean confBean){
+        Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
+        prefs.put(Constants.DB, confBean.getDb());
+        prefs.put(Constants.HOST, confBean.getHost());
+        prefs.put(Constants.PORT, confBean.getPort());
+        prefs.put(Constants.DBNAME, confBean.getDbName());
+        prefs.put(Constants.USER, confBean.getUser());
+        prefs.put(Constants.PASSWD, confBean.getPasswd());
+        prefs.put(Constants.PKG, confBean.getPkg());
+        prefs.put(Constants.DIR, confBean.getDir());
+    }
+
+    // 从Preferences获取用户上次的输入
+    public void getConfFromPreferences(){
+        CommandOptions co = new CommandOptions();
+        Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
+        dbComboBox.setSelectedItem(prefs.get(Constants.DB,co.db));
+        ipTextField.setText(prefs.get(Constants.HOST,co.host));
+        portTextField.setText(prefs.get(Constants.PORT,co.port));
+        dbNameTextField.setText(prefs.get(Constants.DBNAME,co.dbName));
+        userTextField.setText(prefs.get(Constants.USER,co.user));
+        pswTextField.setText(prefs.get(Constants.PASSWD,co.passwd));
+        packageTextField.setText(prefs.get(Constants.PKG,co.pkg));
+        pathTextField.setText(prefs.get(Constants.DIR,co.dir));
     }
 
     /**
@@ -316,7 +308,9 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new JavabeanGenerateFrame().setVisible(true);
+                JavabeanGenerateFrame javabeanGenerateFrame = new JavabeanGenerateFrame();
+                javabeanGenerateFrame.setVisible(true);
+                javabeanGenerateFrame.getConfFromPreferences();
             }
         });
     }
@@ -389,10 +383,6 @@ class MyTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int r, int c) {
         // TODO Auto-generated method stub
-        /*if(c == TABLENAME_COLUMN){
-            Table table = (Table)data[r][c];
-            return table.getName();
-        }*/
         return data[r][c];
     }
 
@@ -416,6 +406,18 @@ class MyTableModel extends AbstractTableModel {
 
     public void setData(Object[][] data) {
         this.data = data;
+    }
+
+    //自定义方法，获取被选择的表名
+    public java.util.List<Table> getSelectedTables(){
+        int rowCount = this.getRowCount();
+        java.util.List<Table> selectedTablesList = new ArrayList<Table>();
+        for(int i=0;i<rowCount;i++){
+            if((Boolean)this.getValueAt(i,CHECKBOX_COLUMN)){
+                selectedTablesList.add((Table)this.getValueAt(i,TABLENAME_COLUMN));
+            }
+        }
+        return selectedTablesList;
     }
 }
 
@@ -451,7 +453,6 @@ class CheckHeaderCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
                                                    int row, int column) {
-        // TODO Auto-generated method stub
         String valueStr = (String) value;
         JLabel label = new JLabel(valueStr);
         label.setHorizontalAlignment(SwingConstants.CENTER); // 表头标签剧中

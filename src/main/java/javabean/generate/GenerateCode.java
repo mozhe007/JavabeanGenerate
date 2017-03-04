@@ -1,7 +1,7 @@
 package javabean.generate;
 
 import com.beust.jcommander.JCommander;
-import javabean.generate.bean.Connection;
+import javabean.generate.bean.ConnectionBean;
 import javabean.generate.bean.Table;
 import javabean.generate.parse.GenerateJavaBean;
 import javabean.generate.parse.Parse;
@@ -16,8 +16,8 @@ public class GenerateCode {
         new JCommander(options, args);
 
         List<Table> tables = new Parse(
-                new Connection(options.host, options.port, options.db,options.schema, options.user, options.passwd))
-                .getParseTables();
+                new ConnectionBean(options.host, options.port, options.dbName,options.user, options.passwd))
+                .getParseTables("Oracle");
         try {
             List<File> outFiles = new GenerateJavaBean(tables).generate(new File(options.dir), options.pkg);
             for(File outFile : outFiles){
@@ -32,7 +32,7 @@ public class GenerateCode {
         new JCommander(options, args);
 
         List<Table> tables = new Parse(
-                new Connection(options.host, options.port, options.db, options.user, options.passwd))
+                new ConnectionBean(options.host, options.port, options.dbName, options.user, options.passwd))
                 .getParseTables();
         try {
             List<File> outFiles = new GenerateJavaBean(tables).generate(new File(options.dir), options.pkg);
