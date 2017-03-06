@@ -8,7 +8,6 @@ public class CommandOptions {
     private static final String DEFAULT_HOST = "192.168.150.152";
     private static final String DEFAULT_PORT = "1521";
     private static final String DEFAULT_DB_NAME = "zrrwtshkf01";
-    private static final String DEFAULT_SCHEMA = "DKFP_NW";//for Oracle
     private static final String DEFAULT_USER = "DKFP_NW";
     private static final String DEFAULT_PASSWD = "dkfp_nw";
     private static final String DEFAULT_PKG = "com.example";

@@ -210,7 +210,10 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
     }// </editor-fold>
 
     private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        //清空(可能存在历史查询结果)
+        tableNamesTable.setModel(new MyTableModel());
         ConfBean confBean = getInputConf();
+        this.setConfToPreferences(confBean);
         java.util.List<Table> tables = new Parse(
                 new ConnectionBean(confBean.getHost(), confBean.getPort(), confBean.getDbName(),confBean.getUser(), confBean.getPasswd()))
                 .getParseTables(confBean.getDb());
@@ -227,7 +230,6 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
 
     private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {
         ConfBean confBean = getInputConf();
-        this.setConfToPreferences(confBean);
         java.util.List<Table> selectedTables = ((MyTableModel)tableNamesTable.getModel()).getSelectedTables();
         try {
             java.util.List<File> outFiles = new GenerateJavaBean(selectedTables).generate(new File(confBean.getDir()), confBean.getPkg());
@@ -238,6 +240,7 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+
     // 获取界面上的用户输入信息
     public ConfBean getInputConf(){
         ConfBean confBean = new ConfBean();
@@ -251,6 +254,7 @@ public class JavabeanGenerateFrame extends javax.swing.JFrame {
         confBean.setDir(pathTextField.getText());
         return confBean;
     }
+
     // 保存用户的输入到Preferences,以便下次获取
     public void setConfToPreferences(ConfBean confBean){
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
@@ -382,8 +386,16 @@ class MyTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int r, int c) {
-        // TODO Auto-generated method stub
+        if(c==TABLENAME_COLUMN){
+            return ((Table)data[r][c]).getName();
+        }
         return data[r][c];
+    }
+
+    //重写setValueAt方法
+    public void setValueAt(Object value, int r, int c) {
+        data[r][c] = value;
+        this.fireTableCellUpdated(r, c);
     }
 
     //重写isCellEditable方法
@@ -392,12 +404,6 @@ class MyTableModel extends AbstractTableModel {
             return true;
         }
         return false;
-    }
-
-    //重写setValueAt方法
-    public void setValueAt(Object value, int r, int c) {
-        data[r][c] = value;
-        this.fireTableCellUpdated(r, c);
     }
 
     public Object[][] getData() {
@@ -414,7 +420,7 @@ class MyTableModel extends AbstractTableModel {
         java.util.List<Table> selectedTablesList = new ArrayList<Table>();
         for(int i=0;i<rowCount;i++){
             if((Boolean)this.getValueAt(i,CHECKBOX_COLUMN)){
-                selectedTablesList.add((Table)this.getValueAt(i,TABLENAME_COLUMN));
+                selectedTablesList.add((Table)this.getData()[i][TABLENAME_COLUMN]);
             }
         }
         return selectedTablesList;

@@ -28,14 +28,14 @@ public class Parse {
         java.sql.Connection conn = null;
         if("Oracle".equalsIgnoreCase(db)){
             conn= getConnectionOracle();
-        } else if ("Mysql".equals(db)){
+        } else if ("Mysql".equalsIgnoreCase(db)){
             conn= getConnectionMysql();
         }
         ResultSet rs = null;
         try {
             DatabaseMetaData dbmd = conn.getMetaData();
-            //rs = dbmd.getTables(conn.getCatalog(), null, null, new String[]{"TABLE"});
-            rs = dbmd.getTables(conn.getCatalog(),connection.getUser(),null,new String[]{"TABLE","VIEW"});
+            rs = dbmd.getTables(conn.getCatalog(), null, null, new String[]{"TABLE"});
+            //rs = dbmd.getTables(conn.getCatalog(),connection.getUser(),null,new String[]{"TABLE","VIEW"});
             ResultSet colRs;
             List<Column> columns;
             while (rs.next()) {
@@ -72,7 +72,8 @@ public class Parse {
         String url = "jdbc:oracle:thin:@%s:%s:%s";
         url = String.format(url, connection.getHost(), connection.getPort(), connection.getDb());
         try {
-            conn = DriverManager.getConnection(url, connection.getUser(), connection.getPasswd());
+            //用户名转了大写
+            conn = DriverManager.getConnection(url, connection.getUser().toUpperCase(), connection.getPasswd());
         } catch (SQLException e) {
             e.printStackTrace();
         }
