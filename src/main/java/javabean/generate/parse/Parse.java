@@ -34,8 +34,7 @@ public class Parse {
         ResultSet rs = null;
         try {
             DatabaseMetaData dbmd = conn.getMetaData();
-            rs = dbmd.getTables(conn.getCatalog(), null, null, new String[]{"TABLE"});
-            //rs = dbmd.getTables(conn.getCatalog(),connection.getUser(),null,new String[]{"TABLE","VIEW"});
+            rs = dbmd.getTables(conn.getCatalog(),connection.getUser(),null,new String[]{"TABLE","VIEW"});
             ResultSet colRs;
             List<Column> columns;
             while (rs.next()) {

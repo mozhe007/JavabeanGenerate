@@ -33,7 +33,7 @@ public class GenerateCode {
 
         List<Table> tables = new Parse(
                 new ConnectionBean(options.host, options.port, options.dbName, options.user, options.passwd))
-                .getParseTables();
+                .getParseTables("mysql");
         try {
             List<File> outFiles = new GenerateJavaBean(tables).generate(new File(options.dir), options.pkg);
             for(File outFile : outFiles){
