@@ -28,6 +28,7 @@ public class ${class} implements Serializable {
 	public void set${item.mName}(${item.javaType} ${item.name}) {
 		this.${item.name} = ${item.name};
 	}
+
 	</#list>
 	
 	@Override
